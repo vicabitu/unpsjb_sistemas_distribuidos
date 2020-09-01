@@ -1,13 +1,13 @@
 import grpc
 
-# import the generated classes
+# import de las clases generadas
 import file_system_pb2
 import file_system_pb2_grpc
 
 # abrir un canal gRPC
 channel = grpc.insecure_channel('localhost:50051')
 
-# create a stub (client)
+# crear un stub (cliente)
 stub = file_system_pb2_grpc.FSStub(channel)
 
 directorio = '.'

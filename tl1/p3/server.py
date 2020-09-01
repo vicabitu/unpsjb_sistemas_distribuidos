@@ -24,8 +24,8 @@ class FSServicer(file_system_pb2_grpc.FSServicer):
 
 server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
 
-# use the generated function `add_FSServicer_to_server`
-# to add the defined class to the server
+# agregar al servidor la clase definida mediante la
+# funcion add_FSServicer_to_server
 file_system_pb2_grpc.add_FSServicer_to_server(
         FSServicer(), server)
 
@@ -34,8 +34,8 @@ print('Starting server. Listening on port 50051.')
 server.add_insecure_port('[::]:50051')
 server.start()
 
-# since server.start() will not block,
-# a sleep-loop is added to keep alive
+# dado que server.start() es no bloqueante,
+# se agrega un sleep-loop para mantenerlo vivo
 try:
     while True:
         time.sleep(86400)

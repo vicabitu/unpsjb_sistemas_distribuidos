@@ -1,16 +1,20 @@
-import grpc
 
-# import de las clases generadas
-import file_system_pb2
-import file_system_pb2_grpc
+class Client:
 
-# abrir un canal gRPC
-channel = grpc.insecure_channel('localhost:50051')
+    def __init__(self, adapter):
+        self.adapter = adapter
 
-# crear un stub (cliente)
-stub = file_system_pb2_grpc.FSStub(channel)
+    def conectar(self):
+        try:
+            self.adapter.connect()
+        except Exception as e:
+            print('Connection error {e}')
 
-directorio = '.'
-path = file_system_pb2.Path(value=directorio)
-response = stub.ListFiles(path)
-print(response.values)
+    def desconectar(self):
+        self.adapter.disconnect()
+
+    def esta_conectado(self):
+        return self.adapter.is_connected()
+
+    def listar_archivos(self, path):
+        return self.adapter.list_files(path)

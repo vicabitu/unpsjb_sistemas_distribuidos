@@ -4,11 +4,14 @@ import cgi
 import cgitb
 import json
 import sqlalchemy
+import logging
 from sqlalchemy import *
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 cgitb.enable()
+
+logger = logging.getLogger()
 
 print("Content-Type: application/json;charset=utf-8")
 print()
@@ -53,6 +56,10 @@ def query_users():
         user = u.__dict__
         user.pop('_sa_instance_state', None)    
         users.append(user)
+    logger.error("gettinhg userss ==================")
+    logger.error(type(users))
+    logger.error(users)
+    users = {"password": "un_password", "username": "pedro", "id": 1, "age": 36, "name": "Pedro Konstantinoff"}]
     return users
 
 

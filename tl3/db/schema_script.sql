@@ -1,4 +1,10 @@
-﻿CREATE TABLE users(
+﻿CREATE TABLE cookies(
+    key character(36) PRIMARY KEY, 
+    value character(36) NOT NULL
+);
+
+
+CREATE TABLE users(
     id serial PRIMARY KEY, 
     name character(70) NOT NULL,
     username character(70) NOT NULL,

@@ -17,7 +17,7 @@ services:
     volumes:
       - /db/data:/volume
     ports:
-      - "5432:5432"
+      - "5550:5432"
     environment:
       - POSTGRES_PASSWORD=admin
       - POSTGRES_USER=admin

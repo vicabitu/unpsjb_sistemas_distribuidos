@@ -1,21 +1,10 @@
 version: '3'
 services:
-  login:
-    build: ./src/login
-    container_name: "tl3_websrv"
-    volumes:
-      - ./src/frontend/:/usr/local/apache2/htdocs/
-      - ./src/backend/:/usr/local/apache2/cgi-bin/
-    ports:
-      - "8080:80"
-    links:
-      - postgres
-
   postgres:
     build: ./db
     container_name: "tl3_db"
     volumes:
-      - /db/data:/volume
+      - ${PWD}/db/data:/volume
     ports:
       - "5550:5432"
     environment:
@@ -23,3 +12,34 @@ services:
       - POSTGRES_USER=admin
       - POSTGRES_DB=tl3
       - PGDATA=/volume/data
+
+  nginx:
+    image: nginx:1.15
+    restart: always
+    container_name: "nginx"
+    ports:
+      - "8000:80"
+    volumes:
+      - ./balancer:/etc/nginx/conf.d:ro
+    depends_on:
+      - login
+    
+  login:
+    build: ./src/login
+    restart: always
+    depends_on:
+      - postgres
+    links:
+      - postgres
+
+    #networks:
+    #  - nginx_network
+    # esto solo funciona con swarm
+    #deploy:
+    #  replicas: 5x
+    #  restart_policy:
+    #    condition: on-failure
+    #  resources:
+    #    limits:
+    #      cpus: "0.1"
+    #      memory: 50M      

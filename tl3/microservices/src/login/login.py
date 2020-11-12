@@ -8,7 +8,7 @@ from flask import (
 
 app = Flask(__name__)
 
-PORT = 3200
+PORT = 5000
 HOST = '0.0.0.0'
 
 json = {
@@ -28,7 +28,7 @@ json = {
 def index():
     return "HELLO WORLD"
 
-@app.route("/hola")
+@app.route("/template")
 def hola():
     return render_template("login.html")
 

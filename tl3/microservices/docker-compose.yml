@@ -31,15 +31,3 @@ services:
       - postgres
     links:
       - postgres
-
-    #networks:
-    #  - nginx_network
-    # esto solo funciona con swarm
-    #deploy:
-    #  replicas: 5x
-    #  restart_policy:
-    #    condition: on-failure
-    #  resources:
-    #    limits:
-    #      cpus: "0.1"
-    #      memory: 50M      

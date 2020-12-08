@@ -21,14 +21,6 @@ engine = create_engine(db_string, echo=False)
 
 metadata = MetaData()
 
-users_table = Table('users', metadata,
-     Column('id', Integer, primary_key=True),
-     Column('name', String),
-     Column('username', String),
-     Column('age', Integer),
-     Column('password', String),
-)
-
 metadata.create_all(engine) 
 Session = sessionmaker(bind=engine)
 session = Session()
@@ -59,7 +51,13 @@ def query_users():
     logger.error("gettinhg userss ==================")
     logger.error(type(users))
     logger.error(users)
-    users = {"password": "un_password", "username": "pedro", "id": 1, "age": 36, "name": "Pedro Konstantinoff"}]
+    users = {
+        "password": "un_password", 
+        "username": "pedro", 
+        "id": 1, 
+        "age": 36, 
+        "name": "Pedro Konstantinoff"
+    }
     return users
 
 

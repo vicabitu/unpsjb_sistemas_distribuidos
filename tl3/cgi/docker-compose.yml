@@ -15,7 +15,7 @@ services:
     build: ./db
     container_name: "tl3_db"
     volumes:
-      - /db/data:/volume
+      - ${PWD}/db/data:/volume
     ports:
       - "5550:5432"
     environment:
@@ -23,3 +23,11 @@ services:
       - POSTGRES_USER=admin
       - POSTGRES_DB=tl3
       - PGDATA=/volume/data
+
+  broker:
+    build: ./broker
+    container_name: "tl3_broker"
+    ports:
+      - 1883:1883
+      - 9001:9001
+      

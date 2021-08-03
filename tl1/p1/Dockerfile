@@ -6,3 +6,4 @@ COPY server11.py ./
 
 CMD ["python", "./server11.py"]]
 
+EXPOSE 8090

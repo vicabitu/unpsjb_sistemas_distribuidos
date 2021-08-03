@@ -4,9 +4,9 @@ Pasos para generar las clases necesarias de gRPC.
         pip install grpcio
         pip install grpcio-tools
 
-1 - Define functions
+1 - Definir las funciones
 
-2 - Define protocol buffer specification
+2 - Defininir la especificación
 
 3 - ejecutar
     python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. file_system.proto
@@ -18,5 +18,8 @@ Pasos para generar las clases necesarias de gRPC.
 5 - Crear un cliente
 
 
+Bibligrafia
+https://grpc.io/docs/languages/python/basics/
+https://developers.google.com/protocol-buffers/docs/proto3#any
 
 Konstantinoff Pedro 18/08/2020.

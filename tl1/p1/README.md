@@ -1,30 +1,46 @@
+### Pasos para la ejecución de los fuentes
+
+#### Requerimientos
+
 Para la ejecución del cliente y servidor es necesario python versión 3 o superior.
 
-Ejecutando en la línea de comandos:
-   python server11.py 
-se inicializa el servidor, quedando a la espera de clientes.
+#### Ejecución 
 
-Por otro lado, mediante:
-	python client11.py
-se crea un cliente que se conecta al servidor y envía un saludo.
+Iniciado el servidor, el mismo queda a la espera de conexiones entrantes.
 
+```sh
+python server11.py 
+```
 
------------------------
-Para ejecutar el servidor en un contenedor docker, 
-mediante el comando:
-        docker image build . --tag <<nombre_de_la_imagen>>
-se genera una imagen con el fuente del servidor11.py.
+Para la creación de un cliente que se conecta al servidor anterior
 
-Seguidamente, para corroborar la existencia de la imagen:
-        docker image ls
-mostrará en pantalla las imagenes disponibles.
+```sh
+python client11.py
+```
 
 
-Para ejecutar el servidor:
-        docker run -p 8090:8080 <<nombre_de_la_imagen>>
 
-   - en donde 8090 es el puerto del host, 
-   - 8080 es el puerto definido para el servidor, 
-   - y finalmente el nombre de la imagen creada previamente.
+#### Ejecución del servidor en un contendor docker
+
+1. Generar la imagen del contedor para el servidor 
+
+   ```sh
+   docker image build . --tag <<nombre_de_la_imagen>>
+   ```
+
+2. Corroborar la existencia de la imagen
+
+   ```sh
+   docker image ls
+   ```
+
+3. Ejecutar el servidor contenerizado
+
+   ```sh
+   docker run -p 8080:8080 <<nombre_de_la_imagen>>
+   ```
+      
+   > en donde 8080 es el puerto del host, 
+   > 8090 es el puerto definido para el servidor, 
+   > y finalmente el nombre de la imagen creada previamente.
  
-Konstantinoff Pedro. 18/08/2020.

@@ -8,9 +8,9 @@
 
 2. Defininir la especificación
 
-3. ejecutar
+3. Ejecutar
 
-    ```
+    ```sh
     python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. file_system.proto
     ```
     

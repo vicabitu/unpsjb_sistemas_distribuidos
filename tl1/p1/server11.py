@@ -1,29 +1,33 @@
-import socket
+from srv_stub import Stub
+from server import Server
 
 
-server_address = (('0.0.0.0', 8090))
+def main():
 
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    stub = Stub("0.0.0.0", 8090)
 
-server.bind(server_address)
-server.listen()
+    server = Server(adapter=stub)
 
-message = 'I am SERVER\n'
+    server.config()
 
-while True:
-	print('Server disponible!')
-	connection, client_address = server.accept()
-	from_client = ''
+    server.start()
+    print("Server disponible!")
 
-	while True:
-		data = connection.recv(4096)
-		if not data: break
-		from_client += data.decode()
+    while True:
+        server.accept_connection()
 
-		connection.send(message.encode('utf-8'))
+        # Show client
+        print(">    ", server.get_client())
 
-	print(from_client)
+        # Echoing message
+        message = server.receive()
+        print(f">    Message received: {message}")
 
-	connection.close()
-	print('cliente desconectado \n')
+        server.send(message)
 
+        server.close_connection()
+        print(f">    Client disconnected \n")
+
+
+if __name__ == "__main__":
+    main()

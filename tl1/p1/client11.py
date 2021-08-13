@@ -16,10 +16,16 @@ def main():
     # pdb.set_trace()
     cliente.conectar()
 
-    cliente.enviar("un mensaje")
+    while True:
+        user_mensaje = input()
 
-    mensaje = cliente.recibir()
-    print(mensaje)
+        cliente.enviar(user_mensaje)
+
+        mensaje = cliente.recibir()
+        print(f"Respuesta: {mensaje}")
+
+        if user_mensaje == "salir":
+            break
 
     cliente.desconectar()
 

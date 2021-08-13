@@ -23,8 +23,11 @@ def main():
         message = server.receive()
         print(f">    Message received: {message}")
 
+        while message != "salir":
+            server.send(message)
+            message = server.receive()
+            print(f">    Message received: {message}")
         server.send(message)
-
         server.close_connection()
         print(f">    Client disconnected \n")
 

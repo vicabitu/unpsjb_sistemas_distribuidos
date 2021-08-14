@@ -17,6 +17,7 @@ def main():
     cliente.conectar()
 
     while True:
+        print("Ingrese un mensaje")
         user_mensaje = input()
 
         cliente.enviar(user_mensaje)

@@ -34,3 +34,6 @@ class Stub:
 
     def get_client(self):
         return self.client
+
+    def close_socket(self):
+        self.server.close()

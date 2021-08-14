@@ -22,3 +22,6 @@ class Server:
 
     def receive(self):
         return self.adapter.receive()
+
+    def close_socket(self):
+        self.adapter.close_socket()

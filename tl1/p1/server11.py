@@ -4,31 +4,37 @@ from server import Server
 
 def main():
 
-    stub = Stub("0.0.0.0", 8090)
+    try:
+        stub = Stub("0.0.0.0", 8090)
 
-    server = Server(adapter=stub)
+        server = Server(adapter=stub)
 
-    server.config()
+        server.config()
 
-    server.start()
-    print("Server disponible!")
+        server.start()
+        print("Server disponible!")
 
-    while True:
+        print(server.adapter.server)
         server.accept_connection()
+        while True:
 
-        # Show client
-        print(">    ", server.get_client())
+            # Show client
+            print(">    ", server.get_client())
 
-        # Echoing message
-        message = server.receive()
-        print(f">    Message received: {message}")
-
-        while message != "salir":
-            server.send(message)
+            # Echoing message
             message = server.receive()
             print(f">    Message received: {message}")
-        server.send(message)
-        server.close_connection()
+
+            while message != "salir":
+                server.send(message)
+                message = server.receive()
+                print(f">    Message received: {message}")
+            server.send(message)
+            server.close_connection()
+            print(f">    Client disconnected \n")
+
+    except KeyboardInterrupt:
+        server.close_socket()
         print(f">    Client disconnected \n")
 
 

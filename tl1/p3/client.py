@@ -1,6 +1,4 @@
-
 class Client:
-
     def __init__(self, adapter):
         self.adapter = adapter
 
@@ -8,7 +6,7 @@ class Client:
         try:
             self.adapter.connect()
         except Exception as e:
-            print('Connection error {e}')
+            print("Connection error {e}")
 
     def desconectar(self):
         self.adapter.disconnect()
@@ -18,3 +16,12 @@ class Client:
 
     def listar_archivos(self, path):
         return self.adapter.list_files(path)
+
+    def abrir_archivo(self, path):
+        return self.adapter.open_file(path)
+
+    def leer_archivo(self, path):
+        return self.adapter.read_file(path)
+
+    def cerrar_archivo(self, path):
+        return self.adapter.close_file(path)

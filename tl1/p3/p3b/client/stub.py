@@ -1,44 +1,58 @@
-import sockets
-
-from p3b.structures import (
-    Path, 
-    PathFiles,
-)
+import socket
+import pickle
 
 
 class FSStub:
-
     def __init__(self, canal):
         self._channel = canal
 
     def ListFiles(self, path):
-        path = Path(path=path, operacion=1)
-        self._channel.sendall(path)
+        payload = {"path": path, "operacion": 1}
+        payload_serialized = pickle.dumps(payload)
+        self._channel.sendall(payload_serialized)
+        data = self._channel.recv(4096)
+        data_deserialized = pickle.loads(data)
+        return data_deserialized.get("paths")
 
-        path_files = PathFiles()
-        list_files = []
-        while self._channel.recv_into(path_files):
-            list_files.append(path_files.values)
+    def openFile(self, path):
+        payload = {"path": path, "operacion": 2}
+        payload_serialized = pickle.dumps(payload)
+        self._channel.sendall(payload_serialized)
+        data = self._channel.recv(4096)
+        data_deserialized = pickle.loads(data)
+        return data_deserialized.get("open")
 
-        return list_files
+    def readFile(self, path):
+        payload = {"path": path, "operacion": 3}
+        payload_serialized = pickle.dumps(payload)
+        self._channel.sendall(payload_serialized)
+        data = self._channel.recv(4096)
+        data_deserialized = pickle.loads(data)
+        return data_deserialized.get("data_file")
+
+    def closeFile(self, path):
+        payload = {"path": path, "operacion": 4}
+        payload_serialized = pickle.dumps(payload)
+        self._channel.sendall(payload_serialized)
+        data = self._channel.recv(4096)
+        data_deserialized = pickle.loads(data)
+        return data_deserialized.get("close")
 
 
 class Stub:
-
-    def __init__(self, host='0.0.0.0', port='8090'):
-        self._appliance = (host, port)
+    def __init__(self, host="0.0.0.0", port="8090"):
+        self._appliance = (host, int(port))
         self._channel = None
-        self._stup = None
+        self._stub = None
 
     def connect(self):
-        """ Returns a gRPC open channel """
         try:
             self._channel = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self._channel.connect(self._appliance)
             self._stub = FSStub(self._channel)
             return True if self._channel else False
         except Exception as e:
-            print('Error when openning channel {}'.format(e))
+            print("Error when openning channel {}".format(e))
             return False
 
     def disconnect(self):
@@ -52,3 +66,12 @@ class Stub:
         if self.is_connected():
             return self._stub.ListFiles(path)
         return None
+
+    def open_file(self, path):
+        return self._stub.openFile(path)
+
+    def read_file(self, path):
+        return self._stub.readFile(path)
+
+    def close_file(self, path):
+        return self._stub.closeFile(path)

@@ -3,12 +3,12 @@ import grpc
 from file_system_pb2 import Path
 from file_system_pb2_grpc import FSStub
 
-class Stub:
 
-    def __init__(self, host='0.0.0.0', port='50051'):
-        self._appliance = ':'.join([host, port])
+class Stub:
+    def __init__(self, host="0.0.0.0", port="50051"):
+        self._appliance = ":".join([host, port])
         self._channel = None
-        self._stup = None
+        self._stub = None
 
     def connect(self):
         """ Returns a gRPC open channel """
@@ -17,7 +17,7 @@ class Stub:
             self._stub = FSStub(self._channel)
             return True if self._channel else False
         except Exception as e:
-            print('Error when openning channel {}'.format(e))
+            print("Error when openning channel {}".format(e))
             return False
 
     def disconnect(self):
@@ -33,3 +33,18 @@ class Stub:
             response = self._stub.ListFiles(path)
             return response.values
         return None
+
+    def open_file(self, path):
+        path = Path(value=path)
+        response = self._stub.OpenFile(path)
+        return response.value
+
+    def read_file(self, path):
+        path = Path(value=path)
+        response = self._stub.ReadFile(path)
+        return response.value
+
+    def close_file(self, path):
+        path = Path(value=path)
+        response = self._stub.CloseFile(path)
+        return response.value

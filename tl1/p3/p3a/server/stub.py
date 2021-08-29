@@ -8,6 +8,7 @@ from file_system_pb2_grpc import (
     FSServicer,
 )
 
+
 class StubFSServicer(FSServicer):
 
     opened_files = {}
@@ -22,20 +23,39 @@ class StubFSServicer(FSServicer):
             for file in self._adapter.list_files(request.value):
                 response.values.append(file)
         except Exception as e:
-            print('ERRR En server list files ', e)
+            print("ERRR En server list files ", e)
         return response
 
-class Stub:
+    def OpenFile(self, request, context):
+        response = file_system_pb2.Boolean()
+        can_open = self._adapter.open_file(request.value)
+        response.value = can_open
+        return response
 
-    def __init__(self, adapter, port='50051'):
-        self._port = port
+    def ReadFile(self, request, context):
+        response = file_system_pb2.File()
+        content_file = self._adapter.read_file(request.value)
+        content = content_file.encode()
+        response.value = content
+        return response
+
+    def CloseFile(self, request, context):
+        response = file_system_pb2.Boolean()
+        can_open = self._adapter.close_file(request.value)
+        response.value = can_open
+        return response
+
+
+class Stub:
+    def __init__(self, adapter, port="50051"):
         self._adapter = adapter
+        self._port = port
         self.server = None
 
     def _setup(self):
         self.server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
         add_FSServicer_to_server(StubFSServicer(self._adapter), self.server)
-        self.server.add_insecure_port('[::]:{}'.format(self._port))
+        self.server.add_insecure_port("[::]:{}".format(self._port))
 
     def run(self):
         self._setup()

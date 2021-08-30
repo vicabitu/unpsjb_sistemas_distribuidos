@@ -6,36 +6,27 @@ def main():
 
     try:
         stub = Stub("0.0.0.0", 8090)
-
         server = Server(adapter=stub)
-
         server.config()
-
         server.start()
         print("Server disponible!")
-
-        print(server.adapter.server)
-        server.accept_connection()
         while True:
-
+            server.accept_connection()
             # Show client
-            print(">    ", server.get_client())
-
+            print("> ", server.get_client())
             # Echoing message
             message = server.receive()
-            print(f">    Message received: {message}")
+            print(f"> Message received: {message}")
 
             while message != "salir":
                 server.send(message)
                 message = server.receive()
-                print(f">    Message received: {message}")
+                print(f"> Message received: {message}")
             server.send(message)
-            server.close_connection()
-            print(f">    Client disconnected \n")
-
+            print(f"> Client disconnected \n")
     except KeyboardInterrupt:
+        print(f"> Server disconnected \n")
         server.close_socket()
-        print(f">    Client disconnected \n")
 
 
 if __name__ == "__main__":

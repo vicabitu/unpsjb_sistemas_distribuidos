@@ -22,8 +22,13 @@ class FSStub:
         data_deserialized = pickle.loads(data)
         return data_deserialized.get("open")
 
-    def readFile(self, path):
-        payload = {"path": path, "operacion": 3}
+    def readFile(self, path, offset, cant_bytes):
+        payload = {
+            "path": path,
+            "offset": offset,
+            "cant_bytes": cant_bytes,
+            "operacion": 3,
+        }
         payload_serialized = pickle.dumps(payload)
         self._channel.sendall(payload_serialized)
         data = self._channel.recv(4096)
@@ -70,8 +75,8 @@ class Stub:
     def open_file(self, path):
         return self._stub.openFile(path)
 
-    def read_file(self, path):
-        return self._stub.readFile(path)
+    def read_file(self, path, offset, cant_bytes):
+        return self._stub.readFile(path, offset, cant_bytes)
 
     def close_file(self, path):
         return self._stub.closeFile(path)

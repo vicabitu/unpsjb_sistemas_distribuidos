@@ -34,9 +34,10 @@ class StubFSServicer(FSServicer):
 
     def ReadFile(self, request, context):
         response = file_system_pb2.File()
-        content_file = self._adapter.read_file(request.value)
-        content = content_file.encode()
-        response.value = content
+        content_file = self._adapter.read_file(
+            request.path.value, request.offset.value, request.cant_bytes.value
+        )
+        response.value = content_file
         return response
 
     def CloseFile(self, request, context):

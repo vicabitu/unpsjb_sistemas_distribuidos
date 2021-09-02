@@ -15,9 +15,23 @@ message File {
     bytes value = 1;
 }
 
+message Offset {
+    int32 value = 1;
+}
+
+message CantBytes {
+    int32 value = 1;
+}
+
+message ReadFileParameters {
+    Path path = 1;
+    Offset offset = 2;
+    CantBytes cant_bytes = 3;
+}
+
 service FS {
     rpc ListFiles(Path) returns (PathFiles){};
     rpc OpenFile(Path) returns (Boolean){};
-    rpc ReadFile(Path) returns (File){};
+    rpc ReadFile(ReadFileParameters) returns (File){};
     rpc CloseFile(Path) returns (Boolean){};
 }

@@ -1,6 +1,6 @@
 import grpc
 
-from file_system_pb2 import Path
+from file_system_pb2 import Path, Offset, CantBytes, ReadFileParameters
 from file_system_pb2_grpc import FSStub
 
 
@@ -39,9 +39,14 @@ class Stub:
         response = self._stub.OpenFile(path)
         return response.value
 
-    def read_file(self, path):
+    def read_file(self, path, offset, cant_bytes):
         path = Path(value=path)
-        response = self._stub.ReadFile(path)
+        offset = Offset(value=offset)
+        cant_bytes = CantBytes(value=cant_bytes)
+        read_file_parameters = ReadFileParameters(
+            path=path, offset=offset, cant_bytes=cant_bytes
+        )
+        response = self._stub.ReadFile(read_file_parameters)
         return response.value
 
     def close_file(self, path):

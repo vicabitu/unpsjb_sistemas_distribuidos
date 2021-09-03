@@ -1,5 +1,7 @@
 from client import Client
 from datetime import datetime
+from timeit import default_timer
+from datetime import timedelta
 
 # from p3a import ClientStub
 
@@ -14,7 +16,7 @@ def get_extension_file(path):
 
 
 def leer_archivo(cliente, path):
-
+    start = default_timer()
     can_open_file = cliente.abrir_archivo(path)
 
     if can_open_file:
@@ -36,9 +38,11 @@ def leer_archivo(cliente, path):
                 break
         file.close()
         cliente.cerrar_archivo(path)
-        return True
+        end = default_timer()
+        total_execution_time = timedelta(seconds=end - start)
+        return [True, total_execution_time]
     else:
-        return False
+        return [False, None]
 
 
 def listar_archivos(path, cliente):
@@ -78,8 +82,9 @@ def main():
                 path = show_path_menu()
                 print(f"Path ingresado: {path}")
                 operation_result = leer_archivo(cliente, path)
-                if operation_result:
+                if operation_result[0]:
                     print("Descarga exitosa!")
+                    print(f"Tiempo total de ejecucion: {operation_result[1]}")
                 else:
                     print("No se encontró el archivo, vuelva a intentar")
             elif opcion == 2:

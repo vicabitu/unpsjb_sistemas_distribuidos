@@ -3,6 +3,8 @@ from datetime import datetime
 from timeit import default_timer
 from datetime import timedelta
 
+# Comentar y descomentar las importaciones de los stubs para cambiar el comportamiento del cliente
+
 from p3a import ClientStub
 
 # from p3b import ClientStub

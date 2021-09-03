@@ -3,11 +3,11 @@ from datetime import datetime
 from timeit import default_timer
 from datetime import timedelta
 
-# from p3a import ClientStub
+from p3a import ClientStub
 
-from p3b import ClientStub
+# from p3b import ClientStub
 
-CANT_BYTES = 100
+CANT_BYTES = 2048
 
 
 def get_extension_file(path):

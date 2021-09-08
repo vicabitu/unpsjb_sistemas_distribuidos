@@ -5,6 +5,7 @@ import pickle
 
 def process_request(canal, file_system_adapter):
     print("> 1 process_request")
+    _adapter = file_system_adapter()
     while True:
         data = canal.recv(4096)
         if not data:
@@ -14,13 +15,13 @@ def process_request(canal, file_system_adapter):
         comando = payload.get("operacion", -1)
         if comando == 1:
             path = payload.get("path")
-            path_files = file_system_adapter.list_files(path)
+            path_files = _adapter.list_files(path)
             response = {"paths": path_files}
             response_serialized = pickle.dumps(response)
             canal.sendall(response_serialized)
         elif comando == 2:
             path = payload.get("path")
-            open = file_system_adapter.open_file(path)
+            open = _adapter.open_file(path)
             response = {"open": open}
             response_serialized = pickle.dumps(response)
             canal.sendall(response_serialized)
@@ -28,13 +29,13 @@ def process_request(canal, file_system_adapter):
             path = payload.get("path")
             offset = payload.get("offset")
             cant_bytes = payload.get("cant_bytes")
-            data_file = file_system_adapter.read_file(path, offset, cant_bytes)
+            data_file = _adapter.read_file(path, offset, cant_bytes)
             response = {"data_file": data_file}
             response_serialized = pickle.dumps(response)
             canal.sendall(response_serialized)
         elif comando == 4:
             path = payload.get("path")
-            close = file_system_adapter.close_file(path)
+            close = _adapter.close_file(path)
             response = {"close": close}
             response_serialized = pickle.dumps(response)
             canal.sendall(response_serialized)

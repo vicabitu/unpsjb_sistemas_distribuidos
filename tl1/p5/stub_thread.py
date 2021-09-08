@@ -7,7 +7,7 @@ class FSStub(threading.Thread):
     def __init__(self, canal, file_system_adapter):
         threading.Thread.__init__(self)
         self._channel = canal
-        self._adapter = file_system_adapter
+        self._adapter = file_system_adapter()
 
     def run(self):
         while True:
@@ -63,10 +63,13 @@ class Stub:
             while True:
                 connection, client_address = self.server.accept()
                 print(
-                    "Connected to: " + client_address[0] + ":" + str(client_address[1])
+                    "> Connected to: "
+                    + client_address[0]
+                    + ":"
+                    + str(client_address[1])
                 )
                 thread = FSStub(connection, self._adapter)
-                print(f"Driven by the thread: {thread.getName()}")
+                print(f"> Driven by the thread: {thread.getName()}\n")
                 thread.start()
 
         except KeyboardInterrupt:

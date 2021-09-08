@@ -14,7 +14,7 @@ class StubFSServicer(FSServicer):
     opened_files = {}
 
     def __init__(self, adapter):
-        self._adapter = adapter
+        self._adapter = adapter()
         FSServicer.__init__(self)
 
     def ListFiles(self, request, context):

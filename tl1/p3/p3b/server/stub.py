@@ -5,7 +5,7 @@ import pickle
 class FSStub:
     def __init__(self, canal, file_system_adapter):
         self._channel = canal
-        self._adapter = file_system_adapter
+        self._adapter = file_system_adapter()
         self._process_request()
 
     def _process_request(self):

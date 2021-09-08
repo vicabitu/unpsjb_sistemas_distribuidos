@@ -49,6 +49,8 @@ def leer_archivo(cliente, path):
 
 def listar_archivos(path, cliente):
     archivos = cliente.listar_archivos(path)
+    if archivos is None:
+        return False
     if len(archivos) == 0:
         return False
     print(f"Se encontraron {len(archivos)} archivos:")

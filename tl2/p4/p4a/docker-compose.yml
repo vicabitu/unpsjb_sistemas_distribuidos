@@ -1,0 +1,7 @@
+version: "3.9"
+services:
+  nginx_server_4a:
+    build: .
+    container_name: "server_4a"
+    ports:
+      - "8080:80"

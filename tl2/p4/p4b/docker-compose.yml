@@ -1,0 +1,9 @@
+version: "3.9"
+services:
+  nginx_server_4b:
+    build: .
+    container_name: "server_4b"
+    volumes:
+      - ./site/:/usr/share/nginx/html
+    ports:
+      - "8080:80"

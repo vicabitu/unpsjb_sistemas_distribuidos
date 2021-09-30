@@ -6,7 +6,7 @@ from datetime import datetime
 class TimeServer(object):
     def get_time(self):
         time = datetime.now()
-        string_time = time.strftime("%Y%m%d %H:%M:%S:%f")
+        string_time = time.strftime("%Y-%m-%d %H:%M:%S:%f")
         return string_time
 
 

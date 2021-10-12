@@ -1,0 +1,8 @@
+version: "3.9"
+
+services:
+  app:
+    build: .
+    container_name: "tl2-4e-4f"
+    ports:
+      - "8085:50051"

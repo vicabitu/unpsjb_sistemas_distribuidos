@@ -8,29 +8,30 @@
     <script type="text/javascript" src="statics/jquery-3.5.1.js"></script>
     <script type="text/javascript" src="statics/bootstrap/js/bootstrap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js" type="text/javascript"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-cookie@beta/dist/js.cookie.min.js"></script>
     <link rel="stylesheet" href="statics/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="statics/estilos.css">
     <script>
-        var usuarios = "";
-        function get_users(){
+        function get_users() {
+            console.log('Get users');
             $("#users_tbody").empty();
             var jqxhr = $.get("/cgi-bin/users.py", function( users ) {
-                console.log('load_users || ');
                 console.log(users);
-                for (row in users){
+                for (row in users) {
                     let user = users[row];
-                    console.log(row);
-                    console.log(user);
-                    new_tr = '<tr><th scope="row">'+ user.id + '</th>';
-                    new_tr += '<td>'+user.name+'</td>';
-                    new_tr += '<td>'+user.age+'</td>';
-                    new_tr += '<td>'+user.username+'</td>';
-                    new_tr += '<td>'+user.password+'</td></tr>';
-                    console.log(new_tr);
+                    let btn = '<td><button id="check_cookie_button" type="button" class="btn btn-dark btnSelect">Modificar</button></td></tr>';
+                    // let anchor = '<td><a href="login.html">Mofificar</a></td>';
+                    new_tr = `<tr><th scope="row">${user.id}</th>`;
+                    new_tr += `<td>${user.name}</td>`;
+                    new_tr += `<td>${user.age}</td>`;
+                    new_tr += `<td>${user.username}</td>`;
+                    new_tr += `<td>${user.password}</td>`;
+                    new_tr += `${btn}</tr>`
                     $('#users_tbody').append(new_tr);
                 }
             })
             .fail(function() {
+                console.log("Fail");
                 new_tr = '<tr><th scope="row" colspan="5"> No se pudieron consultar los usuarios</th>';
                 $('#users_tbody').append(new_tr);
             })
@@ -45,7 +46,7 @@
         //     $("publicado").val(message.payloadString);
         // }
 
-        function message_handler(message){
+        function message_handler(message) {
             console.log(message.destinationName + message.payloadString);
             if (message.destinationName == '/messages'){
                 var msgs = $('#messages').html();
@@ -69,7 +70,7 @@
                 $('#messages').html(msgs);
                 */
             }
-            if (message.destinationName == '/users'){                
+            if (message.destinationName == '/users') {                
                 usuarios = message.payloadString;
                 /*
                 var msgs = $('#usuarios').html();                
@@ -86,7 +87,7 @@
             }
         }
 
-        function mqtt_setup(){
+        function mqtt_setup() {
 
             var wsbroker = "127.0.0.1";
             var wsport = 9001
@@ -133,14 +134,11 @@
             return client;
         }
 
-        $(document).ready(function(){   
-         
+        $(document).ready(function() {   
             get_users();
 
-            mqtt_client = mqtt_setup();
-                   
-
-            $('#send_mqtt_msg').on('click', function(){
+            // mqtt_client = mqtt_setup();
+            $('#send_mqtt_msg').on('click', function() {
                 /*
                 msg = $('#mqtt_msg_sent').val();
                 msg = $('#mqtt_msg').val()+','+"yo";
@@ -152,8 +150,8 @@
                client.send(message);
             });
 
-
             $('#new_user').submit(function(event) {
+                console.log('New user');
                 var formData = {
                     'name'     : $('#name').val(),
                     'age'      : $('#age').val(),
@@ -161,6 +159,7 @@
                     'password' : $('#password').val()
                 };
 
+                console.log('formData', formData);
                 $.ajax({
                     type        : 'POST',
                     url         : '/cgi-bin/users.py',
@@ -170,15 +169,112 @@
                 })
                 .done(function(data) {
                     alert('Usuario guardado correctamente');
-                    $('#toggle_modal').click()
+                    console.log('Exito');
+                    $('#toggle_modal_create_user').click()
                     get_users();
                 })
-                .fail(function(data){
+                .fail(function(data) {
                     alert('No se pudo guardar el usuario');
+                    console.log('Fail');
+                    console.log('data', data);
                 });
-
                 event.preventDefault();
-            });            
+            });
+
+            $('#login_user').submit(function(event) {
+                console.log('Login');
+                console.log('Username: ', $('#login_username').val());
+                console.log('Password: ', $('#login_password').val());
+                
+                var formData = {
+                    'username' : $('#login_username').val(),
+                    'password' : $('#login_password').val()
+                };
+                console.log('formData', formData);
+
+                $.ajax({
+                    type        : 'POST',
+                    url         : '/cgi-bin/login.py',
+                    data        : formData, 
+                    dataType    : 'json',
+                    encode      : true
+                })
+                .done(function(data) {
+                    alert('Login correcto');
+                    console.log('data', data);
+                    Cookies.set('session_key', data.username);
+                    Cookies.set('session_value', data.password);
+                    $('#toggle_modal_login').click()
+                    $('#loginModal').modal('hide');
+                    $('#modifyUserModal').modal('show');
+                })
+                .fail(function(data){
+                    console.log("Fail")
+                    alert('Ocurrio un error al intentar iniciar sesion en el sistema');
+                });
+                event.preventDefault();
+            });
+
+            $("#users_table").on('click', '.btnSelect', function() {
+                console.log("check cookie");
+                const session_key = Cookies.get('session_key');
+                const value = Cookies.get('session_value');
+                console.log('session_key', session_key);
+                console.log('value', value);
+                Cookies.set('session_key', session_key);
+                Cookies.set('session_value', value);
+                let currentRow=$(this).closest("tr"); 
+                const userId = currentRow.find("th:eq(0)").text();
+                const name = currentRow.find("td:eq(0)").text();
+                const age = currentRow.find("td:eq(1)").text();
+                $('input[name="name_modify_user"]').val(name);
+                $('input[name="age_modify_user"]').val(age);
+                $('input[name="id_modify_user"]').val(userId);
+                console.log('Name: ', name);
+                console.log('Age: ', age);
+                var jqxhr = $.get("/cgi-bin/check_cookie.py", function( users ) {
+                    console.log("Check cookie ok!");
+                    $('#modifyUserModal').modal('show');
+                })
+                .fail(function() {
+                    console.log("Fail");
+                    $('#loginModal').modal('show');
+                })
+            });
+
+            $('#modify_user').submit(function(event) {
+                console.log('modify User');
+                console.log('Name: ', $('#name_modify').val());
+                console.log('Age: ', $('#age_modify').val());
+                console.log('Id: ', $('#id_modify').val());
+                
+                var formData = {
+                    'name' : $('#name_modify').val(),
+                    'age' : $('#age_modify').val(),
+                    'id'  : $('#id_modify').val()
+                };
+                console.log('formData', formData);
+
+                $.ajax({
+                    type        : 'POST',
+                    url         : '/cgi-bin/modify_user.py',
+                    data        : formData, 
+                    dataType    : 'json',
+                    encode      : true
+                })
+                .done(function(data) {
+                    console.log("Modificacion exitosa");
+                    alert('Modify correcto');
+                    $('#modifyUserModal').modal('hide');
+                    get_users()
+                })
+                .fail(function(data) {
+                    console.log("Fail")
+                    alert('Ocurrio un error al intentar intentar modificar el usuario');
+                    $('#modifyUserModal').modal('hide');
+                });
+                event.preventDefault();
+            });
         });
     </script>
 </head>
@@ -194,10 +290,10 @@
 
     <br><br>
     <div class="content">
-        <table class="table">
+        <table class="table" id="users_table">
             <thead class="bg-warning">
                 <tr>
-                    <th scope="col" colspan="5">Usuarios</th>
+                    <th scope="col" colspan="6">Usuarios</th>
                 </tr>
                 <tr>
                     <th scope="col">#</th>
@@ -205,6 +301,7 @@
                     <th scope="col">Edad</th>
                     <th scope="col">Usuario</th>
                     <th scope="col">Password</th>
+                    <th scope="col">Modificar</th>
                 </tr>
             </thead>
             <tbody id="users_tbody">
@@ -212,8 +309,8 @@
             </tbody>
             <tfoot>
                 <tr class="bg-warning">                    
-                    <td colspan="5" class="align-a-derecha">
-                        <button id="toggle_modal" type="button" class="btn btn-dark" data-toggle="modal" data-target="#exampleModal">
+                    <td colspan="6" class="align-a-derecha">
+                        <button id="toggle_modal_create_user" type="button" class="btn btn-dark" data-toggle="modal" data-target="#createUserModal">
                             Agregar
                         </button>
                     </td>
@@ -221,6 +318,7 @@
             </tfoot>
         </table>
     </div>
+    
     <div class="content">       
         <textarea name="" id="messages" cols="30" rows="10"></textarea>
         <input type="text" name="" id="mqtt_msg">
@@ -230,12 +328,12 @@
         </ul>
     </div>
 
-    <!-- Modal -->
-    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <!-- Create user Modal -->
+    <div class="modal fade" id="createUserModal" tabindex="-1" role="dialog" aria-labelledby="createUserModalLabel" aria-hidden="true">
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+            <h5 class="modal-title" id="createUserModalLabel">Agregar Usuario</h5>
             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>
@@ -267,7 +365,68 @@
         </div>
       </div>
     </div>
-
+    <!-- Modify user Modal -->
+    <div class="modal fade" id="modifyUserModal" tabindex="-1" role="dialog" aria-labelledby="modifyUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="modifyUserModalLabel">Modificar Usuario</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body"> 
+              <form id="modify_user" action="/cgi-bin/modify_user.py" method="post">
+                  <div class="form-group">
+                      <label for="name">Nombre</label>
+                      <input type="text" class="form-control" id="name_modify" name="name_modify_user" aria-describedby="emailHelp" placeholder="Nombre">
+                  </div>
+                  <div class="form-group">
+                      <label for="age">Edad</label>
+                      <input type="text" class="form-control" id="age_modify" name="age_modify_user" placeholder="Edad">
+                  </div>
+                  <div hidden class="form-group">
+                      <label for="user_id">Usuario</label>
+                      <input type="text" class="form-control" id="id_modify" name="id_modify_user" aria-describedby="id" placeholder="id">
+                  </div>
+              </form>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+              <button type="button" class="btn btn-success" onclick="$('#modify_user').submit();">Guardar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    <!-- Login Modal -->
+    <div class="modal fade" id="loginModal" tabindex="-1" role="dialog" aria-labelledby="loginModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="loginModalLabel">Ingresar al sistema</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body"> 
+                    <form id="login_user" action="/cgi-bin/login.py" method="post">
+                        <div class="form-group">
+                            <label for="username">Usuario</label>
+                            <input type="text" class="form-control" id="login_username" name="username" aria-describedby="Usuario" placeholder="Usuario">
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Contraseña</label>
+                            <input type="password" class="form-control" id="login_password" name="password" placeholder="Contraseña">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-success" onclick="$('#login_user').submit();">Ingresar</button>
+                </div>
+          </div>
+        </div>
+    </div>
 </body>
 
 </html>

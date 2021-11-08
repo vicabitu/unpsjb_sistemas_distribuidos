@@ -23,7 +23,7 @@ class Database:
     def __init__(self):
         if (Database.__instance is not None):
             return Database.__instance
-        db_string = "postgres://admin:admin@tl3_db:5432/tl3"
+        db_string = "postgresql://admin:admin@tl3_db:5432/tl3"
         self.db = create_engine(db_string, echo=False)
         self.meta = MetaData(self.db)
 

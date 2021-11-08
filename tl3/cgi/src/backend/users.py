@@ -4,9 +4,9 @@ import cgi
 import cgitb
 import json
 import logging
-from sqlalchemy import *
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import create_engine, MetaData
 from sqlalchemy.orm import sessionmaker
+from model import User
 
 cgitb.enable()
 
@@ -17,29 +17,10 @@ print()
 
 db_string = "postgresql://admin:admin@tl3_db:5432/tl3"
 engine = create_engine(db_string, echo=False)
-
 metadata = MetaData()
-
 metadata.create_all(engine) 
 Session = sessionmaker(bind=engine)
 session = Session()
-
-
-class User(declarative_base()):
-    __tablename__ = 'users'
-
-    id = Column(Integer, primary_key=True)
-    name = Column(String)
-    username = Column(String)
-    age = Column(Integer)
-    password = Column(String)
-
-    def __init__(self, name, age, username, password):
-        self.name = name
-        self.age = age
-        self.username = username
-        self.password = password
-
 
 def query_users():
     users = []

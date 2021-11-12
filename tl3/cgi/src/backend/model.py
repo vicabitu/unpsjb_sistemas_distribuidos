@@ -1,5 +1,6 @@
+from datetime import datetime
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, String, Integer
+from sqlalchemy import Column, String, Integer, DateTime
 
 class User(declarative_base()):
     __tablename__ = 'users'
@@ -9,9 +10,11 @@ class User(declarative_base()):
     username = Column(String)
     age = Column(Integer)
     password = Column(String)
+    createdat = Column(DateTime)
 
-    def __init__(self, name, age, username, password):
+    def __init__(self, name, age, username, password, createdat):
         self.name = name
         self.age = age
         self.username = username
         self.password = password
+        self.createdat = createdat

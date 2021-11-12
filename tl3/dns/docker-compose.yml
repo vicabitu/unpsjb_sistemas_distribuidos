@@ -1,0 +1,16 @@
+version: '3'
+
+services:
+  coredns:
+    image: coredns/coredns
+    container_name: 'dns'
+    restart: unless-stopped
+    command: -conf /root/Corefile
+    expose:
+      - "53"
+    ports:
+      - "53:53/udp"
+    cap_add:
+      - NET_ADMIN
+    volumes:
+      - "${PWD}/:/root"

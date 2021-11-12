@@ -26,6 +26,7 @@
                     new_tr += `<td>${user.age}</td>`;
                     new_tr += `<td>${user.username}</td>`;
                     new_tr += `<td>${user.password}</td>`;
+                    new_tr += `<td>${user.createdat}</td>`;
                     new_tr += `${btn}</tr>`
                     $('#users_tbody').append(new_tr);
                 }
@@ -293,7 +294,7 @@
         <table class="table" id="users_table">
             <thead class="bg-warning">
                 <tr>
-                    <th scope="col" colspan="6">Usuarios</th>
+                    <th scope="col" colspan="7">Usuarios</th>
                 </tr>
                 <tr>
                     <th scope="col">#</th>
@@ -301,6 +302,7 @@
                     <th scope="col">Edad</th>
                     <th scope="col">Usuario</th>
                     <th scope="col">Password</th>
+                    <th scope="col">Fecha de creacion</th>
                     <th scope="col">Modificar</th>
                 </tr>
             </thead>
@@ -309,7 +311,7 @@
             </tbody>
             <tfoot>
                 <tr class="bg-warning">                    
-                    <td colspan="6" class="align-a-derecha">
+                    <td colspan="7" class="align-a-derecha">
                         <button id="toggle_modal_create_user" type="button" class="btn btn-dark" data-toggle="modal" data-target="#createUserModal">
                             Agregar
                         </button>

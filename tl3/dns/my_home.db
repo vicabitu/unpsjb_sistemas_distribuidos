@@ -1,0 +1,5 @@
+my.home.        IN  SOA ns1.my.home. victor.my.home. 2015082549 7200 3600 1209600 3600
+production.my.home.    IN  A   192.168.10.100
+qa.my.home.            IN  A   192.168.10.101
+ftp.my.home.           IN  A   192.168.10.102
+www.my.home.           IN  CNAME   production

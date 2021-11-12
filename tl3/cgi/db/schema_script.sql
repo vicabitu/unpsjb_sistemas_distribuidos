@@ -9,7 +9,8 @@ CREATE TABLE users(
     name character(70) NOT NULL,
     username character(70) NOT NULL,
     age integer NOT NULL, 
-    password character(20) NOT NULL
+    password character(20) NOT NULL,
+    createdat timestamp NOT NULL,
 );
 
 INSERT INTO users (name, age, username, password) 

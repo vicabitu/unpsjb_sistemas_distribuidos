@@ -1,0 +1,12 @@
+.:53 {
+    forward . 1.1.1.1
+    cache 99999
+    log
+    errors
+}
+
+my.home:53 {
+    file /root/my_home.db
+    log
+    errors
+}

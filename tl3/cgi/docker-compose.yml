@@ -11,6 +11,17 @@ services:
     links:
       - postgres
 
+  apache_synchronous:
+    build: ./websrv
+    container_name: "tl3_websrv_synchronous"
+    volumes:
+      - ./synchronous/frontend/:/usr/local/apache2/htdocs/
+      - ./synchronous/backend/:/usr/local/apache2/cgi-bin/
+    ports:
+      - "8082:80"
+    links:
+      - postgres
+
   postgres:
     build: ./db
     container_name: "tl3_db"

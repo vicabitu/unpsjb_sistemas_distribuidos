@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <title>TL3</title>
+        <script type="text/javascript" src="../statics/jquery-3.5.1.js"></script>
+        <script type="text/javascript" src="../statics/bootstrap/js/bootstrap.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js" type="text/javascript"></script>
+        <script src="https://cdn.jsdelivr.net/npm/js-cookie@beta/dist/js.cookie.min.js"></script>
+        <link rel="stylesheet" href="../statics/bootstrap/css/bootstrap.min.css">
+        <link rel="stylesheet" href="../statics/estilos.css">
+        <script>
+            function get_users() {
+                console.log('Get users');
+                $("#users_tbody").empty();
+                var jqxhr = $.get("/cgi-bin/users.py", function( users ) {
+                    console.log(users);
+                    for (row in users) {
+                        let user = users[row];
+                        let btn = '<td><button id="check_cookie_button" type="button" class="btn btn-dark btnSelect">Modificar</button></td></tr>';
+                        new_tr = `<tr><th scope="row">${user.id}</th>`;
+                        new_tr += `<td>${user.name}</td>`;
+                        new_tr += `<td>${user.age}</td>`;
+                        new_tr += `<td>${user.username}</td>`;
+                        new_tr += `<td>${user.password}</td>`;
+                        new_tr += `<td>${user.createdat}</td>`;
+                        new_tr += `${btn}</tr>`
+                        $('#users_tbody').append(new_tr);
+                    }
+                })
+                .fail(function() {
+                    console.log("Fail");
+                    new_tr = '<tr><th scope="row" colspan="5"> No se pudieron consultar los usuarios</th>';
+                    $('#users_tbody').append(new_tr);
+                })
+            }
+
+            $(document).ready(function() {   
+
+                $('#new_user').submit(function(event) {
+                    console.log('New user');
+                    var formData = {
+                        'name'     : $('#name').val(),
+                        'age'      : $('#age').val(),
+                        'username' : $('#username').val(),
+                        'password' : $('#password').val()
+                    };
+
+                    console.log('formData', formData);
+                    $.ajax({
+                        type        : 'POST',
+                        url         : '/cgi-bin/users.py',
+                        data        : formData, 
+                        dataType    : 'json',
+                        encode      : true
+                    })
+                    .done(function(data) {
+                        alert('Usuario guardado correctamente');
+                        console.log('Exito');
+                        $('#toggle_modal_create_user').click()
+                        get_users();
+                    })
+                    .fail(function(data) {
+                        alert('No se pudo guardar el usuario');
+                        console.log('Fail');
+                        console.log('data', data);
+                    });
+                    event.preventDefault();
+                });
+
+                $('#login_user').submit(function(event) {
+                    console.log('Login');
+                    console.log('Username: ', $('#login_username').val());
+                    console.log('Password: ', $('#login_password').val());
+                    
+                    var formData = {
+                        'username' : $('#login_username').val(),
+                        'password' : $('#login_password').val()
+                    };
+                    console.log('formData', formData);
+
+                    $.ajax({
+                        type        : 'POST',
+                        url         : '/cgi-bin/login.py',
+                        data        : formData, 
+                        dataType    : 'json',
+                        encode      : true
+                    })
+                    .done(function(data) {
+                        alert('Login correcto');
+                        console.log('data', data);
+                        Cookies.set('session_key', data.username);
+                        Cookies.set('session_value', data.password);
+                        $('#toggle_modal_login').click()
+                        $('#loginModal').modal('hide');
+                        $('#modifyUserModal').modal('show');
+                    })
+                    .fail(function(data){
+                        console.log("Fail")
+                        alert('Ocurrio un error al intentar iniciar sesion en el sistema');
+                    });
+                    event.preventDefault();
+                });
+
+                $("#users_table").on('click', '.btnSelect', function() {
+                    console.log("check cookie");
+                    const session_key = Cookies.get('session_key');
+                    const value = Cookies.get('session_value');
+                    console.log('session_key', session_key);
+                    console.log('value', value);
+                    Cookies.set('session_key', session_key);
+                    Cookies.set('session_value', value);
+                    let currentRow=$(this).closest("tr"); 
+                    const userId = currentRow.find("th:eq(0)").text();
+                    const name = currentRow.find("td:eq(0)").text();
+                    const age = currentRow.find("td:eq(1)").text();
+                    $('input[name="name_modify_user"]').val(name);
+                    $('input[name="age_modify_user"]').val(age);
+                    $('input[name="id_modify_user"]').val(userId);
+                    console.log('Name: ', name);
+                    console.log('Age: ', age);
+                    var jqxhr = $.get("/cgi-bin/check_cookie.py", function( users ) {
+                        console.log("Check cookie ok!");
+                        $('#modifyUserModal').modal('show');
+                    })
+                    .fail(function() {
+                        console.log("Fail");
+                        $('#loginModal').modal('show');
+                    })
+                });
+
+                $('#modify_user').submit(function(event) {
+                    console.log('modify User');
+                    console.log('Name: ', $('#name_modify').val());
+                    console.log('Age: ', $('#age_modify').val());
+                    console.log('Id: ', $('#id_modify').val());
+                    
+                    var formData = {
+                        'name' : $('#name_modify').val(),
+                        'age' : $('#age_modify').val(),
+                        'id'  : $('#id_modify').val()
+                    };
+                    console.log('formData', formData);
+
+                    $.ajax({
+                        type        : 'POST',
+                        url         : '/cgi-bin/modify_user.py',
+                        data        : formData, 
+                        dataType    : 'json',
+                        encode      : true
+                    })
+                    .done(function(data) {
+                        console.log("Modificacion exitosa");
+                        alert('Modify correcto');
+                        $('#modifyUserModal').modal('hide');
+                        get_users()
+                    })
+                    .fail(function(data) {
+                        console.log("Fail")
+                        alert('Ocurrio un error al intentar intentar modificar el usuario');
+                        $('#modifyUserModal').modal('hide');
+                    });
+                    event.preventDefault();
+                });
+            });
+        </script>
+    </head>
+    <body>    
+        <nav class="navbar navbar-dark bd-navbar bg-dark">
+            <a class="navbar-brand" href="#">
+                <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-globe2" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm7.5-6.923c-.67.204-1.335.82-1.887 1.855-.143.268-.276.56-.395.872.705.157 1.472.257 2.282.287V1.077zM4.249 3.539a8.372 8.372 0 0 1-1.198-.49 7.01 7.01 0 0 1 2.276-1.52 6.7 6.7 0 0 0-.597.932 8.854 8.854 0 0 0-.48 1.079zM3.509 7.5H1.017A6.964 6.964 0 0 1 2.38 3.825c.47.258.995.482 1.565.667A13.4 13.4 0 0 0 3.508 7.5zm1.4-2.741c.808.187 1.681.301 2.591.332V7.5H4.51c.035-.987.176-1.914.399-2.741zM8.5 5.09V7.5h2.99a12.342 12.342 0 0 0-.399-2.741c-.808.187-1.681.301-2.591.332zM4.51 8.5H7.5v2.409c-.91.03-1.783.145-2.591.332a12.343 12.343 0 0 1-.4-2.741zm3.99 0v2.409c.91.03 1.783.145 2.591.332.223-.827.364-1.754.4-2.741H8.5zm-3.282 3.696A12.63 12.63 0 0 1 7.5 11.91v3.014c-.67-.204-1.335-.82-1.887-1.855a7.776 7.776 0 0 1-.395-.872zm.11 2.276a6.696 6.696 0 0 1-.598-.933 8.853 8.853 0 0 1-.481-1.079 8.38 8.38 0 0 0-1.198.49 7.01 7.01 0 0 0 2.276 1.522zm-1.383-2.964a9.083 9.083 0 0 0-1.565.667A6.963 6.963 0 0 1 1.018 8.5h2.49a13.36 13.36 0 0 0 .437 3.008zm6.728 2.964a7.009 7.009 0 0 0 2.275-1.521 8.376 8.376 0 0 0-1.197-.49 8.853 8.853 0 0 1-.481 1.078 6.688 6.688 0 0 1-.597.933zM8.5 11.909c.81.03 1.577.13 2.282.287-.12.312-.252.604-.395.872-.552 1.035-1.218 1.65-1.887 1.855V11.91zm3.555-.401c.57.185 1.095.409 1.565.667A6.963 6.963 0 0 0 14.982 8.5h-2.49a13.36 13.36 0 0 1-.437 3.008zM14.982 7.5h-2.49a13.361 13.361 0 0 0-.437-3.008 9.123 9.123 0 0 0 1.565-.667A6.963 6.963 0 0 1 14.982 7.5zM11.27 2.461c.177.334.339.694.482 1.078a8.368 8.368 0 0 0 1.196-.49 7.01 7.01 0 0 0-2.275-1.52c.218.283.418.597.597.932zm-.488 1.343c-.705.157-1.473.257-2.282.287V1.077c.67.204 1.335.82 1.887 1.855.143.268.276.56.395.872z"/>
+                </svg>  
+                Distribuidos
+            </a>
+        </nav>
+
+        <br><br>
+        <div class="content">
+            <table class="table" id="users_table">
+                <thead class="bg-warning">
+                    <tr>
+                        <th scope="col" colspan="7">Usuarios</th>
+                    </tr>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Nombre</th>
+                        <th scope="col">Edad</th>
+                        <th scope="col">Usuario</th>
+                        <th scope="col">Password</th>
+                        <th scope="col">Fecha de creacion</th>
+                        <th scope="col">Modificar</th>
+                    </tr>
+                </thead>
+                <tbody id="users_tbody">
+                    
+                </tbody>
+                <tfoot>
+                    <tr class="bg-warning">                    
+                        <td colspan="7" class="align-a-derecha">
+                            <button id="toggle_modal_create_user" type="button" class="btn btn-dark" data-toggle="modal" data-target="#createUserModal">
+                                Agregar
+                            </button>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- Create user Modal -->
+        <div class="modal fade" id="createUserModal" tabindex="-1" role="dialog" aria-labelledby="createUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createUserModalLabel">Agregar Usuario</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body"> 
+                <form id="new_user" action="/cgi-bin/users.py" method="post">
+                    <div class="form-group">
+                        <label for="name">Nombre</label>
+                        <input type="text" class="form-control" id="name" name="name" aria-describedby="emailHelp" placeholder="Nombre">
+                    </div>
+                    <div class="form-group">
+                        <label for="age">Edad</label>
+                        <input type="text" class="form-control" id="age" name="age" placeholder="Edad">
+                    </div>
+                    <div class="form-group">
+                        <label for="username">Usuario</label>
+                        <input type="text" class="form-control" id="username" name="username" aria-describedby="Usuario" placeholder="Usuario">
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Contraseña</label>
+                        <input type="password" class="form-control" id="password" name="password" placeholder="Contraseña">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success" onclick="$('#new_user').submit();">Guardar</button>
+            </div>
+            </div>
+        </div>
+        </div>
+        <!-- Modify user Modal -->
+        <div class="modal fade" id="modifyUserModal" tabindex="-1" role="dialog" aria-labelledby="modifyUserModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                <h5 class="modal-title" id="modifyUserModalLabel">Modificar Usuario</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                </div>
+                <div class="modal-body"> 
+                <form id="modify_user" action="/cgi-bin/modify_user.py" method="post">
+                    <div class="form-group">
+                        <label for="name">Nombre</label>
+                        <input type="text" class="form-control" id="name_modify" name="name_modify_user" aria-describedby="emailHelp" placeholder="Nombre">
+                    </div>
+                    <div class="form-group">
+                        <label for="age">Edad</label>
+                        <input type="text" class="form-control" id="age_modify" name="age_modify_user" placeholder="Edad">
+                    </div>
+                    <div hidden class="form-group">
+                        <label for="user_id">Usuario</label>
+                        <input type="text" class="form-control" id="id_modify" name="id_modify_user" aria-describedby="id" placeholder="id">
+                    </div>
+                </form>
+                </div>
+                <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success" onclick="$('#modify_user').submit();">Guardar</button>
+                </div>
+            </div>
+            </div>
+        </div>
+        <!-- Login Modal -->
+        <div class="modal fade" id="loginModal" tabindex="-1" role="dialog" aria-labelledby="loginModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="loginModalLabel">Ingresar al sistema</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body"> 
+                        <form id="login_user" action="/cgi-bin/login.py" method="post">
+                            <div class="form-group">
+                                <label for="username">Usuario</label>
+                                <input type="text" class="form-control" id="login_username" name="username" aria-describedby="Usuario" placeholder="Usuario">
+                            </div>
+                            <div class="form-group">
+                                <label for="password">Contraseña</label>
+                                <input type="password" class="form-control" id="login_password" name="password" placeholder="Contraseña">
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-success" onclick="$('#login_user').submit();">Ingresar</button>
+                    </div>
+            </div>
+            </div>
+        </div>
+    </body>
+</html>

@@ -1,0 +1,17 @@
+version: '3'
+services:
+  apache:
+    build: ./websrv
+    container_name: "tl4_webserver"
+    volumes:
+      - ./src/frontend/:/usr/local/apache2/htdocs/
+    ports:
+      - "8080:80"
+
+  broker:
+    build: ./broker
+    container_name: "tl4_broker"
+    ports:
+      - 1883:1883
+      - 9001:9001
+      

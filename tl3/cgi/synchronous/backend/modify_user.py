@@ -2,7 +2,7 @@
 import cgi
 import json
 import logging
-from sqlalchemy import create_engine, MetaData
+from sqlalchemy import create_engine, MetaData, log
 from sqlalchemy.orm import sessionmaker
 from model import User
 
@@ -19,15 +19,15 @@ def get_user(id):
     return session.query(User).get(id)
 
 def modify_user(user, form):
-    user.name = form.getvalue('name')
-    user.age = form.getvalue('age')
+    user.name = form.getvalue('name_modify_user')
+    user.age = form.getvalue('age_modify_user')
     session.commit()
 
 try:
     print("Content-Type: application/json;charset=utf-8")
     print()
     form = cgi.FieldStorage()
-    id = form.getvalue('id')
+    id = form.getvalue('id_modify_user')
     user = get_user(id)
     if user:
         modify_user(user, form)

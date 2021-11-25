@@ -13,9 +13,6 @@ cgitb.enable()
 
 logger = logging.getLogger()
 
-# print("Content-Type: application/json;charset=utf-8")
-# print()
-
 db_string = "postgresql://admin:admin@tl3_db:5432/tl3"
 engine = create_engine(db_string, echo=False)
 metadata = MetaData()
@@ -26,8 +23,6 @@ session = Session()
 def query_users():
     users = []
     for u in session.query(User).all():
-        # user = u.__dict__
-        # user.pop('_sa_instance_state', None)
         createdat = u.createdat.strftime("%Y-%m-%d %H:%M:%S")
         user = {
             "id": u.id,
@@ -58,36 +53,33 @@ def create_user():
         logger.error(f"Error: {e}")
         return {'error': True}
 
-def render_template(response):
-    logger.error('render_template')
-    logger.error(response)
-    logger.error(type(response))
+def render_template(users):
     print("Content-Type: text/html;charset=utf-8 \n")
     print()
     with open('/usr/local/apache2/htdocs/index.html') as f:
         for line in f.readlines():
             print(line)
             if '<tbody id="users_tbody">' in line:
-                for r in response:
-                    logger.error(r)
-                    logger.error(type(r))
-                    btn = '<td><button id="check_cookie_button" type="button" class="btn btn-dark btnSelect">Modificar</button></td></tr>'
-                    print(f'<tr><th scope="row">{r.get("id")}</th>')
-                    print(f'<td>{r.get("name")}</td>')
-                    print(f'<td>{r.get("age")}</td>')
-                    print(f'<td>{r.get("username")}</td>')
-                    print(f'<td>{r.get("password")}</td>')
-                    print(f'<td>{r.get("createdat")}</td>')
+                for user in users:
+                    btn = f'<td><a href="/cgi-bin/login_check_cookie.py?username={user.get("username")}&password={user.get("password")}&id={user.get("id")}" class="btn btn-dark">Modificar</a></td>'
+                    print(f'<tr><th scope="row">{user.get("id")}</th>')
+                    print(f'<td>{user.get("name")}</td>')
+                    print(f'<td>{user.get("age")}</td>')
+                    print(f'<td>{user.get("username")}</td>')
+                    print(f'<td>{user.get("password")}</td>')
+                    print(f'<td>{user.get("createdat")}</td>')
                     print(f'{btn}</tr>')
+
+def get_user(username, password):
+    return session.query(User).filter(User.username == username, User.password == password).first()
     
 if os.environ['REQUEST_METHOD'] == 'GET':
-    logger.error("Get de users")
     response = query_users()
 if os.environ['REQUEST_METHOD'] == 'POST':
     response = create_user()
+    if response:
+        response = query_users()
 if not response:
     response = {}
     
 render_template(response)
-
-# print(json.JSONEncoder().encode(response))

@@ -56,10 +56,11 @@
                         console.log('Hay usuarios en la sala');
                         console.log(users);
 
+                        $("#users-list li").remove();
+
                         users.forEach(user => {
                             console.log(user);
                             $("#users-list").append(`<li><a href="#">${user}</a></li>`);
-                            // $("#users-list").append(`<li>${user}</li>`);
                         });
                     } else {
                         console.log('No hay usuarios en la sala');

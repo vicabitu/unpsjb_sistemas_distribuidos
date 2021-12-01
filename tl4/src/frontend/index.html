@@ -4,7 +4,7 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta http-equiv="X-UA-Compatible" content="ie=edge">
-        <title>TL4</title>
+        <title>TL4 - MQTT</title>
         <script type="text/javascript" src="statics/jquery-3.5.1.js"></script>
         <script type="text/javascript" src="statics/bootstrap/js/bootstrap.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js" type="text/javascript"></script>
@@ -12,7 +12,7 @@
         <link rel="stylesheet" href="statics/estilos.css">
         <script>
             var usuarios = "";
-            function get_users(){
+            function get_users() {
                 $("#users_tbody").empty();
                 var jqxhr = $.get("/cgi-bin/users.py", function( users ) {
                     console.log('load_users || ');
@@ -45,8 +45,9 @@
             //     $("publicado").val(message.payloadString);
             // }
 
-            function message_handler(message){
-                console.log(message.destinationName + message.payloadString);
+            function message_handler(message) {
+                console.log('message_hanlder');
+                console.log(message.destinationName + ' - ' + message.payloadString);
                 if (message.destinationName == '/messages'){
                     var msgs = $('#messages').html();
                     var msg = JSON.parse(message.payloadString);
@@ -69,116 +70,147 @@
                     $('#messages').html(msgs);
                     */
                 }
-                if (message.destinationName == '/users'){                
-                    usuarios = message.payloadString;
-                    /*
-                    var msgs = $('#usuarios').html();                
+                if (message.destinationName == '/users') {
+                    console.log('If de users');           
+                    console.log(typeof message.payloadString);
+                    console.log('usuarios', JSON.parse(message.payloadString));
+                    var users = JSON.parse(message.payloadString);
+                    console.log(typeof users[0]);
 
-                    var msg = JSON.parse(message.payloadString);
-                    current_users = $("#mqtt_msg").val();
-                    $("#mqtt_msg").val($("#mqtt_msg").val()+","+msg.user);
-                    usuarios = usuarios + ', ' + msg.user;
-                    $('#users_tbody').append(new_tr);
+                    if (users.length > 0) {
+                        console.log('Hay usuarios en la sala');
+                        console.log(users);
 
-                    msgs = msgs +'\n' + msg.user + ': ' + msg.message;
-                    $('#messages').html(msgs);
-                    */
+                        users.forEach(user => {
+                            console.log(user);
+                            $("#users-list").append(`<li><a href="#">${user}</a></li>`);
+                            // $("#users-list").append(`<li>${user}</li>`);
+                        });
+                    } else {
+                        console.log('No hay usuarios en la sala');
+                    }
+                    
+                    // var msgs = $('#usuarios').html();                
+
+                    // var msg = JSON.parse(message.payloadString);
+                    // current_users = $("#mqtt_msg").val();
+                    // $("#mqtt_msg").val($("#mqtt_msg").val()+","+msg.user);
+                    // usuarios = usuarios + ', ' + msg.user;
+                    // $('#users_tbody').append(new_tr);
+
+                    // msgs = msgs +'\n' + msg.user + ': ' + msg.message;
+                    // $('#messages').html(msgs);
                 }
             }
 
-            function mqtt_setup(){
+            function mqtt_setup() {
+                    console.log('mqtt_setup');
 
-                var wsbroker = "127.0.0.1";
-                var wsport = 9001
+                    var wsbroker = "127.0.0.1";
+                    var wsport = 9001
 
-                var client = new Paho.MQTT.Client(wsbroker, wsport,
-                    "myclientid_" + parseInt(Math.random() * 100, 10));
+                    var client = new Paho.MQTT.Client(wsbroker, wsport,
+                        "myclientid_" + parseInt(Math.random() * 100, 10));
 
-                client.onConnectionLost = function (responseObject) {
-                    console.log("connection lost: " + responseObject.errorMessage);
-                    message = new Paho.MQTT.Message('{"user": "yo"');
-                        message.destinationName = "/users/destroy";
-                        client.send(message);
-                };
+                    client.onConnectionLost = function (responseObject) {
+                        console.log("connection lost: " + responseObject.errorMessage);
+                        message = new Paho.MQTT.Message('{"user": "yo"');
+                            message.destinationName = "/users/destroy";
+                            client.send(message);
+                    };
 
-                client.onMessageArrived = function (message) {
-                    message_handler(message);                        
-                };
+                    client.onMessageArrived = function (message) {
+                        message_handler(message);
+                        console.log('Despues del handler');                      
+                    };
 
-                var options = {
-                    timeout: 3,      
-                    useSSL: false,
-                    cleanSession: true,
-                    userName: '',
-                    password: '',
+                    var options = {
+                        timeout: 3,      
+                        useSSL: false,
+                        cleanSession: true,
+                        userName: '',
+                        password: '',
 
-                    onSuccess: function () {
-                        console.log("mqtt connected");
-                        client.subscribe('/#', {qos: 1});
-                        // client.subscribe('/messages', {qos: 1});
+                        onSuccess: function () {
+                            console.log("mqtt connected");
+                            client.subscribe('/#', {qos: 1});
+                            // client.subscribe('/messages', {qos: 1});
 
-                        message = new Paho.MQTT.Message("Hello");
-                        message.destinationName = "/World";
-                        client.send(message);
+                            // message = new Paho.MQTT.Message('[ "Victor", "Jose" ]');
+                            // message.retained = true;
+                            // message.destinationName = "/users";
+                            // client.send(message);
+                        },
+                        onFailure: function (message) {
+                            console.log("Connection failed: " + message.errorMessage);
+                            console.log(message);
+                            alert("El usuario ya existe en la sala de Chat");
+                        }
+                    };
+
                 
-                    },
-                    onFailure: function (message) {
-                        console.log("Connection failed: " + message.errorMessage);
-                        console.log(message);
-                    }
-                };
+                    client.connect(options);
+                    return client;
 
-                client.connect(options);
-
-                return client;
             }
 
-            $(document).ready(function(){   
+            $(document).ready(function() {
             
                 get_users();
-
                 mqtt_client = mqtt_setup();
                     
-
-                $('#send_mqtt_msg').on('click', function(){
+                $('#send_mqtt_msg').on('click', function() {
                     /*
                     msg = $('#mqtt_msg_sent').val();
                     msg = $('#mqtt_msg').val()+','+"yo";
                     message = new Paho.MQTT.Message(msg);
                     */
-                usuarios = usuarios + ',' + $('#mqtt_msg_sent').val();
-                message = new Paho.MQTT.Message(usuarios);
-                message.destinationName = "/users";
-                client.send(message);
+                    usuarios = usuarios + ',' + $('#mqtt_msg_sent').val();
+                    message = new Paho.MQTT.Message(usuarios);
+                    message.destinationName = "/users";
+                    client.send(message);
                 });
+                
+                $('#verify_user').submit(function(event) {
+                    console.log('Verify User');
+                    var userInput = $('#userName').val();
+                    console.log('userInput', userInput);
 
+                    mqtt_client = mqtt_setup(userInput);
 
-                $('#new_user').submit(function(event) {
-                    var formData = {
-                        'name'     : $('#name').val(),
-                        'age'      : $('#age').val(),
-                        'username' : $('#username').val(),
-                        'password' : $('#password').val()
-                    };
+                    console.log($('#users-list li').length);
+                    console.log($('#users-list li'))
 
-                    $.ajax({
-                        type        : 'POST',
-                        url         : '/cgi-bin/users.py',
-                        data        : formData, 
-                        dataType    : 'json',
-                        encode      : true
-                    })
-                    .done(function(data) {
-                        alert('Usuario guardado correctamente');
-                        $('#toggle_modal').click()
-                        get_users();
-                    })
-                    .fail(function(data){
-                        alert('No se pudo guardar el usuario');
+                    if ($('#users-list li').length == 0) {
+                        console.log("if");
+                        console.log(typeof JSON.stringify([userInput]));
+                        message = new Paho.MQTT.Message('[ "Victor", "Jose" ]');
+                        console.log("instance")
+                        message.retained = true;
+                        message.destinationName = "/users";
+                        mqtt_client.send(message);
+                    } else {
+                        console.log("Mayor a cero");
+                    }
+
+                    $('#users-list li').each(function(i, li) {
+                        var userName = $(li).html();
+                        // console.log('el usuario: ', product.html());
+                        console.log('username: ', userName);
+                        if (userInput === userName) {
+                            alert("El usuario ya existe en la sala de Chat");
+                        }
+                        console.log("Despues del if");
+                        mqtt_client = mqtt_setup(userInput);
+
+                        // message = new Paho.MQTT.Message('[ "Victor", "Jose" ]');
+                        // message.retained = true;
+                        // message.destinationName = "/users";
+                        // mqtt_setup.send(message);
+
                     });
-
                     event.preventDefault();
-                });            
+                });
             });
         </script>
     </head>
@@ -193,7 +225,7 @@
         </nav>
 
         <br><br>
-        <div class="content">
+        <!-- <div class="content">
             <table class="table">
                 <thead class="bg-warning">
                     <tr>
@@ -220,14 +252,35 @@
                     </tr>
                 </tfoot>
             </table>
-        </div>
-        <div class="content">       
+        </div> -->
+
+        <!-- <div class="content">       
             <textarea name="" id="messages" cols="30" rows="10"></textarea>
             <input type="text" name="" id="mqtt_msg">
             <input type="text" name="" id="mqtt_msg_sent"><input type="button" value="" id="send_mqtt_msg"> <br><br>
             <ul id="usuarios">
 
             </ul>
+        </div> -->
+
+        <div class="content">
+            <ul id="users-list">
+            </ul>
+        </div>
+
+        <div class="content">
+            <h5>Ingrese el nombre de usuario:</h5>
+            <form id="verify_user" action="/cgi-bin/users.py" method="post">
+                <div class="form-group">
+                    <label for="name">Usuario</label>
+                    <input type="text" class="form-control" id="userName" name="userName" aria-describedby="emailHelp" placeholder="Usuario">
+                </div>
+                <div class="form-group">
+                    <!-- <button type="submit" value="Submit" class="btn btn-success">Ingresar</button> -->
+                    <button type="button" class="btn btn-success" onclick="$('#verify_user').submit();">Ingresar</button>
+                    <!-- <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button> -->
+                </div>
+            </form>
         </div>
 
         <!-- Modal -->
